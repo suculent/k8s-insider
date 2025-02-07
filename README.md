@@ -28,9 +28,12 @@ The app works by deploying an operator to the cluster and applying CRDs with net
  - Windows:
    - `kubectl` with configured contexts
    - `WireGuard for Windows` for creating local tunnels
+ - MacOS:
+   - `wireguard-tools` for creating local tunnels (`brew install wireguard-tools`)
+   - `WireGuard for Mac` for creating local tunnels
 
 ## Installation
-### `cargo` (GNU/Linux and Windows)
+### `cargo` (GNU/Linux, MacOS and Windows)
 ```bash
 cargo install --locked k8s-insider
 ```
@@ -48,8 +51,6 @@ k8s-insider install
 k8s-insider create network
 k8s-insider connect
 ```
-
-![Demo](demo.gif)
 
 ## Current limitations
 Some autodetection functionality might not work properly on single-binary kubernetes distributions (k3s, k0s, etc.). Please feel free to create an issue or submit a PR for these.

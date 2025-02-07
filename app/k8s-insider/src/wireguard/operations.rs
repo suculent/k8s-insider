@@ -2,6 +2,16 @@ use std::path::Path;
 
 use anyhow::Context;
 
+#[cfg(target_os = "macos")]
+pub fn tunnel_connect(config_path: &Path) -> anyhow::Result<()> {
+    use crate::os::macos::{chmod, wg_quick_up};
+
+    chmod(config_path, 0o600)?;
+    wg_quick_up(config_path).context("Couldn't create the WireGuard interface!")?;
+
+    Ok(())
+}
+
 #[cfg(target_os = "linux")]
 pub fn tunnel_connect(config_path: &Path) -> anyhow::Result<()> {
     use crate::os::linux::{chmod, wg_quick_up};
@@ -20,6 +30,15 @@ pub fn tunnel_connect(config_path: &Path) -> anyhow::Result<()> {
     install_tunnel_service(config_path).context(
         "Couldn't create WireGuard tunnel service! Administrator privileges might be required.",
     )?;
+
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+pub fn tunnel_disconnect(config_path: &Path) -> anyhow::Result<()> {
+    use crate::os::macos::wg_quick_down;
+
+    wg_quick_down(config_path).context("Couldn't remove the WireGuard interface!")?;
 
     Ok(())
 }
@@ -44,6 +63,14 @@ pub fn tunnel_disconnect(config_path: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+pub fn patch_dns_linux(ifname: &str, domain: &str) -> anyhow::Result<()> {
+    use crate::os::macos::resolvectl_domain;
+
+    resolvectl_domain(ifname, domain)?;
+    Ok(())
+}
+
 #[cfg(target_os = "linux")]
 pub fn patch_dns_linux(ifname: &str, domain: &str) -> anyhow::Result<()> {
     use crate::os::linux::resolvectl_domain;
@@ -58,6 +85,15 @@ pub fn patch_dns_windows(dns: &str, domain: &str) -> anyhow::Result<()> {
 
     add_dns_client_nrpt_rule(domain, dns)?;
 
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+pub fn unpatch_dns(_dns: &str, _domain: &str) -> anyhow::Result<()> {
+    // current approach using resolved binds domains to interfaces
+    // and DNS patching is currently removed when the connection is down
+    // so we just nod
+    
     Ok(())
 }
 
